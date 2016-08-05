@@ -8,17 +8,18 @@ import time
 
 
 
-if os.geteuid() != 0: # Comprueba privilegios root
+if os.geteuid() != 0: 
     print "You must be root to change the MAC address\n"
     sys.exit(1)
 
 
 def macchanger():
    '''Returns a random MAC''' 
-   # El primer octeto debe ser par 
-   MAC = random.choice('0123456789ABCDEF') + random.choice('02468ACE') + ':'
+   # first byte must be even
+   chars = '0123456789ABCDEF'
+   MAC = random.choice(chars) + random.choice(chars[::2]) + ':'
    for i in xrange(5):
-      MAC += ''.join(random.choice('0123456789ABCDEF')  for n in xrange(2)) + ':'
+      MAC += ''.join(random.choice(chars)  for n in xrange(2)) + ':'
    return MAC[:-1]
 
 def whichEth():
@@ -28,14 +29,22 @@ def whichEth():
     os.system(cmd)
     return raw_input("Which interface do you want to change the MAC address to?\n")
     
-eth = whichEth()
-mac = macchanger()
-cmd = []
-cmd.append( "ifconfig %s down" % eth )
-cmd.append( "ifconfig %s hw ether %s " % ( eth, mac) )
-cmd.append( "ifconfig %s up" % eth )
-print "Running:\n" 
-for command in cmd:
-    os.system(command)
-    time.sleep(3)
 
+def setEth():
+    eth = whichEth()
+    mac = macchanger()
+    cmd = []
+    cmd.append( "ifconfig %s down" % eth )
+    cmd.append( "ifconfig %s hw ether %s " % ( eth, mac) )
+    cmd.append( "ifconfig %s up" % eth )
+    print "Running:\n" 
+    for command in cmd:
+        print command
+        os.system(command)
+        time.sleep(3)
+
+def main():
+    setEth()
+
+if __name__ == '__main__':
+    main()
